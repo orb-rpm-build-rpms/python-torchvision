@@ -1,0 +1,41 @@
+From 8572bb177d5dea2edfb0276e61e1bc7889c2c629 Mon Sep 17 00:00:00 2001
+From: Tom Rix <trix@redhat.com>
+Date: Mon, 4 Dec 2023 13:18:47 -0500
+Subject: [PATCH] prepare python-torchvision setup for fedora
+
+Need some debug info
+Find lib, headers for ffmpeg
+
+Signed-off-by: Tom Rix <trix@redhat.com>
+---
+ setup.py | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index ce67413f41..1374a907c9 100644
+--- a/setup.py
++++ b/setup.py
+@@ -225,7 +225,8 @@ def get_extensions():
+             extra_compile_args["nvcc"].append("-g")
+     else:
+         print("Compiling with debug mode OFF")
+-        extra_compile_args["cxx"].append("-g0")
++        # extra_compile_args["cxx"].append("-g0")
++        extra_compile_args["cxx"].append("-g")
+ 
+     sources = [os.path.join(extensions_dir, s) for s in sources]
+ 
+@@ -381,8 +382,8 @@ def get_extensions():
+ 
+         ffmpeg_bin = os.path.dirname(ffmpeg_exe)
+         ffmpeg_root = os.path.dirname(ffmpeg_bin)
+-        ffmpeg_include_dir = os.path.join(ffmpeg_root, "include")
+-        ffmpeg_library_dir = os.path.join(ffmpeg_root, "lib")
++        ffmpeg_include_dir = os.path.join(ffmpeg_root, "include/ffmpeg")
++        ffmpeg_library_dir = os.path.join(ffmpeg_root, "lib64")
+ 
+         gcc = os.environ.get("CC", shutil.which("gcc"))
+         platform_tag = subprocess.run([gcc, "-print-multiarch"], stdout=subprocess.PIPE)
+-- 
+2.42.1
+

@@ -1,0 +1,26 @@
+From e538f7ff9b67e13c10dcdb86cfde4fafee15bd29 Mon Sep 17 00:00:00 2001
+From: Tom Rix <trix@redhat.com>
+Date: Sat, 16 Dec 2023 11:24:45 -0500
+Subject: [PATCH] Remove models from torchvision
+
+Signed-off-by: Tom Rix <trix@redhat.com>
+---
+ torchvision/__init__.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/torchvision/__init__.py b/torchvision/__init__.py
+index d3142028e8..3114e59490 100644
+--- a/torchvision/__init__.py
++++ b/torchvision/__init__.py
+@@ -3,7 +3,7 @@ import warnings
+ from modulefinder import Module
+ 
+ import torch
+-from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
++from torchvision import _meta_registrations, datasets, io, ops, transforms, utils
+ 
+ from .extension import _HAS_OPS
+ 
+-- 
+2.43.0
+
