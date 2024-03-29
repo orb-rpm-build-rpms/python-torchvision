@@ -1,0 +1,37 @@
+From c39a89b35c34057a0b107dd39913e6d0f72beb80 Mon Sep 17 00:00:00 2001
+From: Tom Rix <trix@redhat.com>
+Date: Thu, 28 Mar 2024 07:37:27 -0600
+Subject: [PATCH] A better cuda version
+
+---
+ torchvision/csrc/vision.cpp | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/torchvision/csrc/vision.cpp b/torchvision/csrc/vision.cpp
+index b7040cdf4dec..a6334e7d8dd2 100644
+--- a/torchvision/csrc/vision.cpp
++++ b/torchvision/csrc/vision.cpp
+@@ -7,9 +7,6 @@
+ #endif
+ #include <torch/library.h>
+ 
+-#ifdef WITH_CUDA
+-#include <cuda.h>
+-#endif
+ #ifdef WITH_HIP
+ #include <hip/hip_runtime.h>
+ #endif
+@@ -28,8 +25,8 @@ PyMODINIT_FUNC PyInit__C(void) {
+ 
+ namespace vision {
+ int64_t cuda_version() {
+-#ifdef WITH_CUDA
+-  return CUDA_VERSION;
++#if defined(WITH_HIP)
++  return TORCH_HIP_VERSION;
+ #else
+   return -1;
+ #endif
+-- 
+2.44.0
+

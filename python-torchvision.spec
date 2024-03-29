@@ -1,43 +1,49 @@
 %global pypi_name torchvision
-%global pypi_version 0.16.0
 
-%bcond_with gitcommit
+%bcond_without gitcommit
 %if %{with gitcommit}
-# The top of the 0.16 branch - update to whatever..
-%global commit0 fbb4cc54ed521ba912f50f180dc16a213775bf5c
+# The ToT
+%global commit0 2c4665ffbb64f03f5d18016d3398af4ac4da5f03
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
+%global date0 20240326
+%global pypi_version 0.19.0a0
+%else
+%global pypi_version 0.17.1
 %endif
 
 # check takes too long, make optional
 %bcond_with test
 
 # torch toolchain
-%global toolchain clang
+%global toolchain gcc
 
 Name:           python-%{pypi_name}
+%if %{with gitcommit}
+Version:        %{pypi_version}^git%{date0}.%{shortcommit0}
+%else
 Version:        %{pypi_version}
-Release:        7%{?dist}
+%endif
+Release:        %autorelease
 Summary:        Image and video datasets for torch deep learning
 
 License:        BSD-3-Clause AND BSD-2-Clause AND MIT
 URL:            https://github.com/pytorch/vision
 %if %{with gitcommit}
 Source0:        %{url}/archive/%{commit0}/vision-%{shortcommit0}.tar.gz
+Patch1:         0001-A-better-cuda-version.patch
 %else
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/vision-v%{version}.tar.gz
+# https://github.com/pytorch/vision/pull/8096/commits/86620bd84b872b76db0acafec167949dca03a29e
+Patch1:         0001-AV_CODEC_CAP_INTRA_ONLY-is-not-defined.patch
+%endif
 # Need at least -g debugging
 # Find where ffmpeg header and libs are
 Patch0:         0001-prepare-python-torchvision-setup-for-fedora.patch
-# https://github.com/pytorch/vision/pull/8096/commits/86620bd84b872b76db0acafec167949dca03a29e
-Patch1:         0001-AV_CODEC_CAP_INTRA_ONLY-is-not-defined.patch
-# Do not import models
-Patch2:         0001-Remove-models-from-torchvision.patch
-%endif
 
 # Limit to these because that is what torch is on
 ExclusiveArch:  x86_64 aarch64
 
-BuildRequires:  clang
+BuildRequires:  gcc-c++
 BuildRequires:  ffmpeg-free
 BuildRequires:  ffmpeg-free-devel
 BuildRequires:  libavcodec-free-devel
@@ -49,7 +55,6 @@ BuildRequires:  libswresample-free-devel
 BuildRequires:  libswscale-free-devel
 BuildRequires:  ninja-build
 BuildRequires:  python3-devel
-BuildRequires:  python3-torch-devel
 BuildRequires:  zlib-devel
 
 BuildRequires:  python3dist(numpy)
@@ -82,15 +87,8 @@ and common image transformations for computer vision.
 %autosetup -p1 -n vision-%{version}
 %endif
 
-# Remove pretrained models
-# https://github.com/pytorch/vision/issues/2597
-# If we are testing, include the models.
-%if %{without test}
-rm -rf torchvision/models
-%endif
-
 %generate_buildrequires
-%pyproject_buildrequires -t
+%pyproject_buildrequires
 
 %build
 # Building uses python3_sitearch/torch/utils/cpp_extension.py
@@ -98,8 +96,8 @@ rm -rf torchvision/models
 # leads warnings being reported by rpmlint.
 %pyproject_wheel
 
-%if %{with test}
 %check
+%if %{with test}
 %pytest
 %endif
 
@@ -114,7 +112,6 @@ for f in `find %{buildroot}%{python3_sitearch} -name '*.py'`; do
 done
 
 %files -n python3-%{pypi_name}
-
 %license LICENSE
 %doc README.md 
 %{python3_sitearch}/%{pypi_name}
@@ -135,34 +132,6 @@ done
 # dataset used for training. It is your responsibility to determine whether you have permission to use the models for your
 # use case.
 # 
-# More specifically, SWAG models are released under the CC-BY-NC 4.0 license. See
-# [SWAG LICENSE](https://github.com/facebookresearch/SWAG/blob/main/LICENSE) for additional details.
-#
-# - this has been remediated by removing the the torchvision/models/ dir in prep
 
 %changelog
-* Fri Jan 26 2024 Fedora Release Engineering <releng@fedoraproject.org> - 0.16.0-7
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
-
-* Mon Jan 22 2024 Fedora Release Engineering <releng@fedoraproject.org> - 0.16.0-6
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
-
-* Sat Dec 16 2023 Tom Rix <trix@redhat.com> - 0.16.0-5
-- Remove pretrained models
-- Remove autogeneration of dirs
-
-* Mon Dec 4 2023 Tom Rix <trix@redhat.com> - 0.16.0-4
-- Use python-torch
-- enable jpeg, png, ffmpeg
-- Fix exec permission
-
-* Sat Oct 14 2023 Tom Rix <trix@redhat.com> - 0.16.0-3
-- Convert to pyproject_ 
-
-* Tue Oct 10 2023 Tom Rix <trix@redhat.com> - 0.16.0-2
-- Use released 0.16.0
-
-* Sat Sep 30 2023 Tom Rix <trix@redhat.com> - 0.16.0-1
-- Initial package.
-
-
+%autochangelog
