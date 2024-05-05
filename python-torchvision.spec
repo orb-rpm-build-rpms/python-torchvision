@@ -1,14 +1,14 @@
 %global pypi_name torchvision
 
-%bcond_without gitcommit
+%bcond_with gitcommit
 %if %{with gitcommit}
 # The ToT
 %global commit0 2c4665ffbb64f03f5d18016d3398af4ac4da5f03
 %global shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%global date0 20240326
+%global date0 20240326 
 %global pypi_version 0.19.0a0
 %else
-%global pypi_version 0.17.1
+%global pypi_version 0.18.0
 %endif
 
 # check takes too long, make optional
@@ -30,15 +30,15 @@ License:        BSD-3-Clause AND BSD-2-Clause AND MIT
 URL:            https://github.com/pytorch/vision
 %if %{with gitcommit}
 Source0:        %{url}/archive/%{commit0}/vision-%{shortcommit0}.tar.gz
-Patch1:         0001-A-better-cuda-version.patch
 %else
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/vision-v%{version}.tar.gz
 # https://github.com/pytorch/vision/pull/8096/commits/86620bd84b872b76db0acafec167949dca03a29e
-Patch1:         0001-AV_CODEC_CAP_INTRA_ONLY-is-not-defined.patch
+#Patch1:         0001-AV_CODEC_CAP_INTRA_ONLY-is-not-defined.patch
 %endif
 # Need at least -g debugging
 # Find where ffmpeg header and libs are
 Patch0:         0001-prepare-python-torchvision-setup-for-fedora.patch
+Patch1:         0001-A-better-cuda-version.patch
 
 # Limit to these because that is what torch is on
 ExclusiveArch:  x86_64 aarch64
@@ -96,13 +96,9 @@ and common image transformations for computer vision.
 # leads warnings being reported by rpmlint.
 %pyproject_wheel
 
-%check
-%if %{with test}
-%pytest
-%endif
-
 %install
 %pyproject_install
+%pyproject_save_files %{pypi_name}
 
 # exec permission
 for f in `find %{buildroot}%{python3_sitearch} -name '*.py'`; do
@@ -111,11 +107,9 @@ for f in `find %{buildroot}%{python3_sitearch} -name '*.py'`; do
     fi
 done
 
-%files -n python3-%{pypi_name}
+%files -n python3-%{pypi_name} -f %{pyproject_files}
 %license LICENSE
 %doc README.md 
-%{python3_sitearch}/%{pypi_name}
-%{python3_sitearch}/%{pypi_name}-%{pypi_version}.dist-info
 
 # License details
 # From license check output
