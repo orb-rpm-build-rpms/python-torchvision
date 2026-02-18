@@ -1,37 +1,35 @@
-From bc8698a20ea11c676e2f6dc11a53d59918d0c69a Mon Sep 17 00:00:00 2001
-From: Tim Flink <tflink@fedoraproject.org>
-Date: Tue, 27 Aug 2024 09:34:54 -0600
-Subject: [PATCH] patch 0001-A-better-cuda-version.patch
+From 1ce74c9e240db82194f29ed4c832026499067443 Mon Sep 17 00:00:00 2001
+From: Tom Rix <Tom.Rix@amd.com>
+Date: Wed, 18 Feb 2026 11:05:38 -0800
+Subject: [PATCH] A better cuda version
 
 ---
- torchvision/csrc/vision.cpp | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ torchvision/csrc/vision.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/torchvision/csrc/vision.cpp b/torchvision/csrc/vision.cpp
-index 806e870a83..ff4147bebc 100644
+index 806e870a83fd..aaace4d3586f 100644
 --- a/torchvision/csrc/vision.cpp
 +++ b/torchvision/csrc/vision.cpp
-@@ -2,9 +2,6 @@
- 
- #include <torch/library.h>
- 
--#ifdef WITH_CUDA
--#include <cuda.h>
--#endif
+@@ -7,6 +7,7 @@
+ #endif
  #ifdef WITH_HIP
  #include <hip/hip_runtime.h>
++#include <rocm_version.h>
  #endif
-@@ -19,8 +16,8 @@ void* PyInit__C(void) {
+ 
+ // If we are in a Windows environment, we need to define
+@@ -19,8 +20,8 @@ void* PyInit__C(void) {
  
  namespace vision {
  int64_t cuda_version() {
 -#ifdef WITH_CUDA
 -  return CUDA_VERSION;
-+#if defined(WITH_HIP)
-+  return TORCH_HIP_VERSION;
++#ifdef WITH_HIP
++  return (ROCM_VERSION_MAJOR * 100) + ROCM_VERSION_MINOR;
  #else
    return -1;
  #endif
 -- 
-2.46.0
+2.52.0
 
