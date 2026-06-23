@@ -1,14 +1,14 @@
-From b16eeb9f2bc4fa870fea6644bc3fafc1770b9368 Mon Sep 17 00:00:00 2001
+From 533b86d3964f2a5e0daa1dd9fa49b570ff8b43e8 Mon Sep 17 00:00:00 2001
 From: Tom Rix <Tom.Rix@amd.com>
-Date: Tue, 3 Mar 2026 06:13:05 -0800
+Date: Tue, 23 Jun 2026 06:45:11 -0700
 Subject: [PATCH] A better cuda version
 
 ---
- torchvision/csrc/vision.cpp | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ torchvision/csrc/vision.cpp | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/torchvision/csrc/vision.cpp b/torchvision/csrc/vision.cpp
-index 806e870a83fd..e937924c2c88 100644
+index 6cd289d3e8c6..133dd406572f 100644
 --- a/torchvision/csrc/vision.cpp
 +++ b/torchvision/csrc/vision.cpp
 @@ -7,6 +7,7 @@
@@ -19,28 +19,26 @@ index 806e870a83fd..e937924c2c88 100644
  #endif
  
  // If we are in a Windows environment, we need to define
-@@ -18,15 +19,13 @@ void* PyInit__C(void) {
+@@ -18,16 +19,12 @@ void* PyInit__C(void) {
  #endif // !defined(MOBILE) && defined(_WIN32)
  
  namespace vision {
 -int64_t cuda_version() {
 -#ifdef WITH_CUDA
+-  // looks like 12060, 12080, etc.
 -  return CUDA_VERSION;
 -#else
 -  return -1;
+-#endif
+-}
 +#ifdef WITH_HIP
-+  int64_t cuda_version() {
-+    return (ROCM_VERSION_MAJOR * 100) + ROCM_VERSION_MINOR;
-+  }
-+  TORCH_LIBRARY_FRAGMENT(torchvision, m) {
-+    m.def("_cuda_version", &cuda_version);
-+  }
- #endif
--}
++int64_t cuda_version() {  return (ROCM_VERSION_MAJOR * 100) + ROCM_VERSION_MINOR;  }
  
--TORCH_LIBRARY_FRAGMENT(torchvision, m) {
--  m.def("_cuda_version", &cuda_version);
--}
+ TORCH_LIBRARY_FRAGMENT(torchvision, m) {
+   m.def("_cuda_version", &cuda_version);
+ }
++#endif
++
  } // namespace vision
 -- 
 2.53.0
