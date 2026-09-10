@@ -64,6 +64,7 @@ BuildRequires:  python3dist(pytest)
 %endif
 
 %ifarch x86_64
+BuildRequires:  rocm-rpm-macros
 BuildRequires:  hipblas-devel
 BuildRequires:  hipblaslt-devel
 BuildRequires:  hipsolver-devel
@@ -112,6 +113,20 @@ sed -i -e 's@ffmpeg_library_dir = os.path.join(ffmpeg_root, "lib")@ffmpeg_librar
 
 export ROCM_HOME=/usr
 export TORCHVISION_USE_WEBP=1
+
+# Force the HIP (ROCm) sources to compile. torchvision's setup.py only builds
+# its GPU ops when torch.cuda.is_available() is true, which it never is in the
+# GPU-less build chroot, so a default build ships CPU-only (BUILD_CUDA_SOURCES
+# = False). But our torch is a ROCm build, and torchvision's _cuda_version op --
+# which torchvision.extension checks at import time whenever torch reports a
+# HIP/CUDA version -- is compiled only under WITH_HIP (see the "A better cuda
+# version" patch). A CPU-only torchvision against a ROCm torch therefore raises
+# AttributeError: 'torchvision' object has no attribute '_cuda_version' on
+# import, breaking every consumer (e.g. timm). FORCE_CUDA=1 makes setup.py build
+# the HIP sources regardless of runtime GPU availability; PYTORCH_ROCM_ARCH
+# selects the same GPU targets as python-torch.
+export FORCE_CUDA=1
+export PYTORCH_ROCM_ARCH=%{rocm_gpu_list_default}
 
 %pyproject_wheel
 
